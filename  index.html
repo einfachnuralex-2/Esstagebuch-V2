@@ -1,0 +1,295 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mein Esstagebuch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one narrow column, sticky day header, 28-day strip, day log, doctor summary below */
+:root{
+  --bg:#f3f6f5; --surface:#ffffff; --ink:#17302b; --muted:#5d746e; --line:#d6e1de;
+  --accent:#1f7a68; --accent-soft:#dcefea; --warn:#b4541f;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a18; --surface:#162523; --ink:#e3efec; --muted:#93aaa4; --line:#2a3d39;
+  --accent:#55c2a8; --accent-soft:#1d3a34; --warn:#f0965f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a18; --surface:#162523; --ink:#e3efec; --muted:#93aaa4; --line:#2a3d39;
+  --accent:#55c2a8; --accent-soft:#1d3a34; --warn:#f0965f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:1.75rem}
+h2{font-size:1.2rem}
+.sub{color:var(--muted);margin:2px 0 0;font-size:.92rem}
+.label{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.strip button{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 0;font:inherit;font-size:.8rem;font-variant-numeric:tabular-nums;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.strip button .dot{width:6px;height:6px;border-radius:50%;background:transparent}
+.strip button.has .dot{background:var(--accent)}
+.strip button.sel{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.strip button.future{opacity:.45}
+.strip button.today{outline:2px solid var(--accent);outline-offset:1px}
+.dayhead{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;display:flex;align-items:center;gap:8px}
+.dayhead .t{flex:1;min-width:0;text-align:center}
+.dayhead .t strong{font-family:var(--f-display);font-size:1.15rem;display:block}
+.iconbtn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);width:44px;height:44px;border-radius:50%;font-size:1.2rem;cursor:pointer}
+.iconbtn:disabled{opacity:.35;cursor:default}
+form.card,.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips label{border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.9rem;background:var(--bg)}
+.chips input:checked+label{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:700}
+.chips input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+input[type=text],input[type=time],textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{resize:vertical;min-height:72px}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{appearance:none;border:0;background:var(--accent);color:var(--surface);font:inherit;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;font-size:1rem}
+.ghost{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;padding:10px 14px;border-radius:10px;cursor:pointer}
+.formactions{display:flex;gap:8px}
+.formactions .primary{flex:1}
+.entries{display:flex;flex-direction:column;gap:0;list-style:none;margin:0;padding:0}
+.entries li{display:grid;grid-template-columns:52px 1fr auto;gap:10px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.entries li:first-child{border-top:0}
+.time{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
+.what{min-width:0;overflow-wrap:anywhere}
+.what .kind{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);font-weight:700}
+.what .note{color:var(--warn);font-size:.9rem}
+.what .amt{color:var(--muted);font-size:.9rem}
+.mini{display:flex;gap:4px}
+.mini button{appearance:none;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:6px;font:inherit;font-size:.85rem;text-decoration:underline}
+.empty{color:var(--muted);text-align:center;padding:14px 0}
+.status{font-size:.82rem;color:var(--muted);text-align:center}
+.summary pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--f-body);font-size:.9rem;margin:0;max-height:340px;overflow:auto;background:var(--bg);border-radius:10px;padding:12px;border:1px solid var(--line)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.confirm{display:flex;gap:6px;align-items:center;font-size:.85rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Mein Esstagebuch</h1>
+    <p class="sub" id="range">3. – 30. November 2026 · 28 Tage für den Arzttermin</p>
+  </header>
+
+  <section aria-label="Übersicht der 28 Tage">
+    <div class="label" style="margin-bottom:8px" id="progress">Tag 1 von 28</div>
+    <div class="strip" id="strip"></div>
+  </section>
+
+  <div class="dayhead">
+    <button class="iconbtn" id="prev" aria-label="Vorheriger Tag">‹</button>
+    <div class="t"><span class="label" id="dayno">Tag 1</span><strong id="daytitle">Dienstag, 3. November</strong></div>
+    <button class="iconbtn" id="next" aria-label="Nächster Tag">›</button>
+  </div>
+
+  <form class="card" id="form" autocomplete="off">
+    <h2 id="formtitle">Eintrag hinzufügen</h2>
+    <div class="chips" role="radiogroup" aria-label="Mahlzeit" id="kinds"></div>
+    <div class="field">
+      <label class="label" for="f-what">Was hast du gegessen oder getrunken?</label>
+      <input type="text" id="f-what" placeholder="z. B. 2 Scheiben Vollkornbrot mit Käse" required>
+    </div>
+    <div class="row">
+      <div class="field"><label class="label" for="f-time">Uhrzeit</label><input type="time" id="f-time" required></div>
+      <div class="field"><label class="label" for="f-amt">Menge</label><input type="text" id="f-amt" placeholder="z. B. 1 Teller"></div>
+    </div>
+    <div class="field">
+      <label class="label" for="f-note">Beschwerden oder Notiz (optional)</label>
+      <textarea id="f-note" placeholder="z. B. Bauchschmerzen 1 Std. später, Blähungen …"></textarea>
+    </div>
+    <div class="formactions">
+      <button class="primary" type="submit" id="save">Speichern</button>
+      <button class="ghost" type="button" id="cancel" hidden>Abbrechen</button>
+    </div>
+  </form>
+
+  <section class="card" aria-labelledby="listtitle">
+    <h2 id="listtitle">Heute eingetragen</h2>
+    <ul class="entries" id="list"></ul>
+  </section>
+
+  <section class="card summary" aria-labelledby="sumtitle">
+    <h2 id="sumtitle">Für den Arzt</h2>
+    <p class="sub" style="margin:0">Alle Einträge als Text. Kopieren und dem Arzt schicken oder ausgedruckt mitnehmen.</p>
+    <pre id="sumtext"></pre>
+    <div class="btns">
+      <button class="ghost" type="button" id="copy">Text kopieren</button>
+      <button class="ghost" type="button" id="dl" hidden>Als Datei speichern</button>
+    </div>
+    <div class="status" id="copystatus" aria-live="polite"></div>
+  </section>
+
+  <div class="status" id="status">Einträge werden geladen …</div>
+</div>
+
+<script>
+(function(){
+const START = new Date(2026,10,3), DAYS = 28;
+const KINDS = ["Frühstück","Mittagessen","Abendessen","Snack","Getränk"];
+const WD = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const MO = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const $ = id => document.getElementById(id);
+const dayDate = i => new Date(START.getFullYear(), START.getMonth(), START.getDate()+i);
+const iso = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const fmt = d => WD[d.getDay()]+", "+d.getDate()+". "+MO[d.getMonth()];
+const todayIdx = () => { const t=new Date(); t.setHours(0,0,0,0); return Math.round((t-START)/864e5); };
+
+let entries = {};       // id -> {date,time,kind,what,amt,note}
+let sel = Math.min(Math.max(todayIdx(),0),DAYS-1);
+let editing = null, confirmDel = null;
+let col = null;         // db collection or null
+const LS = "esstagebuch-v1";
+
+function lsLoad(){ try{ return JSON.parse(localStorage.getItem(LS)||"{}"); }catch(e){ return {}; } }
+function lsSave(){ try{ localStorage.setItem(LS, JSON.stringify(entries)); }catch(e){} }
+
+// Kinds chips
+$("kinds").innerHTML = KINDS.map((k,i)=>`<input type="radio" name="kind" id="k${i}" value="${k}"${i===0?" checked":""}><label for="k${i}">${k}</label>`).join("");
+
+function guessKind(){
+  const h = new Date().getHours();
+  return h<11?"Frühstück":h<15?"Mittagessen":h<18?"Snack":"Abendessen";
+}
+function nowTime(){ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function resetForm(){
+  editing=null; $("form").reset();
+  $("f-time").value = nowTime();
+  const k = guessKind(); document.querySelector(`input[name=kind][value="${k}"]`).checked = true;
+  $("formtitle").textContent="Eintrag hinzufügen"; $("save").textContent="Speichern"; $("cancel").hidden=true;
+}
+
+function byDay(dateStr){
+  return Object.entries(entries).filter(([,e])=>e.date===dateStr).sort((a,b)=>a[1].time.localeCompare(b[1].time));
+}
+function esc(s){ const d=document.createElement("div"); d.textContent=s==null?"":String(s); return d.innerHTML; }
+
+function render(){
+  const t = todayIdx();
+  // strip
+  $("strip").innerHTML = Array.from({length:DAYS},(_,i)=>{
+    const d=dayDate(i), has=byDay(iso(d)).length>0;
+    const cls=[has?"has":"", i===sel?"sel":"", i>t?"future":"", i===t?"today":""].join(" ");
+    return `<button type="button" class="${cls}" data-i="${i}" aria-label="Tag ${i+1}, ${fmt(d)}${has?", mit Einträgen":""}"><span>${d.getDate()}.</span><span class="dot"></span></button>`;
+  }).join("");
+  const done = Array.from({length:DAYS},(_,i)=>byDay(iso(dayDate(i))).length>0).filter(Boolean).length;
+  $("progress").textContent = (t<0?"Startet am 3. November":t>=DAYS?"4 Wochen abgeschlossen":"Heute ist Tag "+(t+1)+" von 28")+" · "+done+" Tage eingetragen";
+  // head
+  const d=dayDate(sel);
+  $("dayno").textContent="Tag "+(sel+1)+(sel===t?" · Heute":"");
+  $("daytitle").textContent=fmt(d);
+  $("prev").disabled = sel===0; $("next").disabled = sel===DAYS-1;
+  $("listtitle").textContent = sel===t?"Heute eingetragen":"Eingetragen am "+d.getDate()+". "+MO[d.getMonth()];
+  // list
+  const list = byDay(iso(d));
+  $("list").innerHTML = list.length ? list.map(([id,e])=>`<li>
+      <span class="time">${esc(e.time)}</span>
+      <div class="what"><div class="kind">${esc(e.kind)}</div><div>${esc(e.what)}</div>${e.amt?`<div class="amt">${esc(e.amt)}</div>`:""}${e.note?`<div class="note">${esc(e.note)}</div>`:""}</div>
+      <div class="mini">${confirmDel===id
+        ? `<span class="confirm">Löschen? <button type="button" data-del="${id}">Ja</button><button type="button" data-nodel="1">Nein</button></span>`
+        : `<button type="button" data-edit="${id}">Ändern</button><button type="button" data-ask="${id}">Löschen</button>`}</div>
+    </li>`).join("") : `<li class="empty" style="display:block">Noch nichts eingetragen für diesen Tag.</li>`;
+  $("sumtext").textContent = summary();
+}
+
+function summary(){
+  let out = "Esstagebuch 03.11.2026 – 30.11.2026\n";
+  for(let i=0;i<DAYS;i++){
+    const d=dayDate(i), l=byDay(iso(d));
+    if(!l.length) continue;
+    out += `\nTag ${i+1} – ${fmt(d)}\n`;
+    l.forEach(([,e])=>{
+      out += `  ${e.time}  ${e.kind}: ${e.what}${e.amt?" ("+e.amt+")":""}\n`;
+      if(e.note) out += `         Beschwerden/Notiz: ${e.note}\n`;
+    });
+  }
+  return out.trim().includes("\n") ? out : out+"\nNoch keine Einträge.";
+}
+
+// events
+$("strip").addEventListener("click",e=>{ const b=e.target.closest("button[data-i]"); if(!b) return; sel=+b.dataset.i; confirmDel=null; resetForm(); render(); });
+$("prev").onclick=()=>{ if(sel>0){sel--; confirmDel=null; resetForm(); render();} };
+$("next").onclick=()=>{ if(sel<DAYS-1){sel++; confirmDel=null; resetForm(); render();} };
+$("cancel").onclick=()=>{ resetForm(); };
+$("list").addEventListener("click",async e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.ask){ confirmDel=b.dataset.ask; render(); }
+  else if(b.dataset.nodel){ confirmDel=null; render(); }
+  else if(b.dataset.del){ const id=b.dataset.del; confirmDel=null; await removeEntry(id); }
+  else if(b.dataset.edit){
+    const en=entries[b.dataset.edit]; if(!en) return; editing=b.dataset.edit;
+    $("f-what").value=en.what; $("f-time").value=en.time; $("f-amt").value=en.amt||""; $("f-note").value=en.note||"";
+    const r=document.querySelector(`input[name=kind][value="${en.kind}"]`); if(r) r.checked=true;
+    $("formtitle").textContent="Eintrag ändern"; $("save").textContent="Änderung speichern"; $("cancel").hidden=false;
+    $("form").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+});
+$("form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const data={ date:iso(dayDate(sel)), time:$("f-time").value||nowTime(),
+    kind:(document.querySelector("input[name=kind]:checked")||{}).value||"Snack",
+    what:$("f-what").value.trim(), amt:$("f-amt").value.trim(), note:$("f-note").value.trim(), updated:Date.now() };
+  if(!data.what) return;
+  const id = editing || ("e"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+  entries[id]=data; resetForm(); render();
+  await persist(id,data);
+});
+
+async function persist(id,data){
+  if(col){ try{ await col.doc(id).set(data); setStatus("Gespeichert in deinem Konto."); }catch(err){ lsSave(); setStatus("Speichern im Konto hat nicht geklappt. Eintrag ist nur auf diesem Gerät gesichert."); } }
+  else { lsSave(); setStatus("Gespeichert auf diesem Gerät."); }
+}
+async function removeEntry(id){
+  delete entries[id]; render();
+  if(col){ try{ await col.doc(id).delete(); }catch(err){ setStatus("Löschen hat nicht geklappt. Bitte erneut versuchen."); } }
+  else lsSave();
+}
+function setStatus(t){ $("status").textContent=t; }
+
+$("copy").onclick=()=>{
+  const txt=summary();
+  const ok=()=>$("copystatus").textContent="Text kopiert.";
+  const fallback=()=>{ const r=document.createRange(); r.selectNodeContents($("sumtext")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $("copystatus").textContent="Text ist markiert. Jetzt mit „Kopieren“ übernehmen."; };
+  try{ navigator.clipboard.writeText(txt).then(ok,fallback); }catch(err){ fallback(); }
+};
+
+// start
+resetForm();
+entries = lsLoad();
+render();
+
+(async()=>{
+  if(!window.claude||!claude.use){ setStatus("Einträge werden auf diesem Gerät gespeichert."); return; }
+  const [db,user,downloads] = await Promise.all([claude.use("db"),claude.use("user"),claude.use("downloads")]);
+  if(downloads){
+    $("dl").hidden=false;
+    $("dl").onclick=async()=>{ try{ await downloads.save({filename:"Esstagebuch-November-2026.txt",data:summary()}); $("copystatus").textContent="Datei gespeichert."; }catch(err){ $("copystatus").textContent="Datei wurde nicht gespeichert."; } };
+  }
+  const uid = user ? await user.id() : null;
+  if(!db||!uid){ setStatus("Einträge werden auf diesem Gerät gespeichert."); return; }
+  col = db.collection("data/users/"+uid);
+  const local = lsLoad();
+  const timer = setTimeout(()=>setStatus("Verbindung dauert länger. Einträge bleiben auf diesem Gerät gesichert."),10000);
+  let first=true;
+  col.onSnapshot(async snap=>{
+    clearTimeout(timer);
+    const next={}; snap.docs.forEach(d=>{ next[d.id]=d.data(); });
+    if(first){
+      first=false;
+      // Einmalig: Einträge, die nur lokal liegen, ins Konto übernehmen
+      for(const [id,e] of Object.entries(local)){ if(!next[id]){ next[id]=e; try{ await col.doc(id).set(e); }catch(err){} } }
+      try{ localStorage.removeItem(LS); }catch(err){}
+      setStatus("Gespeichert in deinem Konto, auf Handy und PC gleich.");
+    }
+    entries=next; render();
+  },()=>{ clearTimeout(timer); col=null; setStatus("Konto-Speicher nicht erreichbar. Einträge werden auf diesem Gerät gesichert."); });
+})();
+})();
+</script>
+
+</body></html>
